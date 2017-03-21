@@ -1,0 +1,16 @@
+Package: gasl
+Type: Package
+Title: General Additive Super Learner (GASL)
+Version: 0.1.0
+Author: Jeremy Coyle
+Maintainer: Jeremy Coyle <jeremyrcoyle@gmail.com>
+Description: Combination of General Additive Models (GAM) and Super Learner (SL), 
+    for the purpose of creating univariate index or factor variables that are predictive of a particular outcome, 
+    adjusting for other covariates. Backfitting implementation modified from gam package.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 2.14.0),
+          gam,
+          origami
+RoxygenNote: 6.0.1
