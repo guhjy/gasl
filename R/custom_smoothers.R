@@ -4,7 +4,7 @@ linterms <- function(xvar) {
     locall <- sys.call()
     chcall <- deparse(locall)
     
-    xvar <- as.matrix(xvar[[1]])
+    xvar <- as.matrix(xvar)
     xnames <- deparse(locall[[2]])
     nc <- ncol(xvar)
     
