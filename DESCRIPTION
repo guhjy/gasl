@@ -14,3 +14,7 @@ Depends: R (>= 2.14.0),
           gam,
           origami
 RoxygenNote: 6.0.1
+Suggests: testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

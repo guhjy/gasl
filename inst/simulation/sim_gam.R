@@ -1,32 +1,40 @@
+# extract coefs write vignette
+
+library(gasl)
 source(system.file("simulation", "DGD.R", package = "gasl"))
 
-sim_data <- gen_data()
+n <- 1000
+sim_data <- gen_data(n)
+test_data <- gen_data(n * 10)
 
 # fit basic models
-true_fit <- glm(Y ~ A * W1 + W2 + W3, sim_data, family = "binomial")
-sim_data$true_pred <- predict(true_fit, type = "response")
-sim_data$null_pred <- mean(sim_data$Y)
-sim_data$min_pred <- sim_data$Q0aW[cbind(1:nrow(sim_data), as.numeric(sim_data$A))]
+true_model_fit <- glm(Y ~ A * W1 + W2 + W3, sim_data, family = "binomial")
+test_data$true_pred <- predict(true_model_fit, newdata = test_data, type = "response")
+test_data$null_pred <- mean(sim_data$Y)
+test_data$Q0 <- test_data$Q0aW[cbind(seq_along(test_data$A), test_data$A + 1)]
 
-# fit gasl define split between index variables and other variables
-x_factor <- model.matrix(Y ~ W2 + W3 - 1, sim_data)
-x_other <- model.matrix(Y ~ A * W1, sim_data)
-y <- sim_data$Y
+# fit gasl
+X <- sim_data[, c("A", "W1", "W2", "W3")]
+X$AW1 <- X$A * X$W1
+X <- as.matrix(X)
+Y <- sim_data$Y
 
-gasl_fit <- gasl(x_factor, x_other, y)
-sim_data$gasl_pred <- predict(gasl_fit, type = "response")
+factor_vars <- c("W2", "W3")
+covariate_args <- list(SL.library = c("SL.glm", "SL.mean"), folds = make_folds(n))
 
-dev <- function(Y, pred) {
-    dev_sign <- ifelse(Y == 1, 1, -1)
-    dev_sign * sqrt(-2 * (Y * log(pred) + (1 - Y) * log(1 - pred)))
-}
+gasl_fit <- gasl(X, Y, factor_vars, covariate_args = covariate_args)
 
-risk <- function(Y, pred) {
-    mean(dev(Y, pred)^2)
-}
+test_X <- test_data[, c("A", "W1", "W2", "W3")]
+test_X$AW1 <- test_X$A * test_X$W1
+test_X <- test_X
+
+test_data$gasl_pred <- predict(gasl_fit, newdata = test_X, type = "response")
+
+sim_data$gasl_pred <- predict(gasl_fit, newdata = X, type = "response")
+sim_data$gasl_pred2 <- predict(gasl_fit, type = "response")
 
 
-risk(sim_data$Y, sim_data$null_pred)
-risk(sim_data$Y, sim_data$gasl_pred)
-risk(sim_data$Y, sim_data$true_pred)
-risk(sim_data$Y, sim_data$min_pred)
+logit_risk(test_data$Y, test_data$null_pred)
+logit_risk(test_data$Y, test_data$gasl_pred)
+logit_risk(test_data$Y, test_data$true_pred)
+logit_risk(test_data$Y, test_data$Q0)

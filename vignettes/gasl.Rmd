@@ -1,0 +1,63 @@
+---
+title: "GAM with Super Learner smoother"
+author: "Jeremy Coyle"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+bibliography: references.bib
+vignette: > 
+  %\VignetteIndexEntry{gasl}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+library(gasl)
+```
+
+`gasl` is a package for fitting a GAM with SuperLearner smoothers for one or more components. Currently, it is structured for two smoothers, one for a "factor" that is a combination of covariates and a second for covariates that aren't part of the factor. This could be used to create an index variable such as a wealth index. This index variable can then be used in future studies, or as part of a data adaptive target parameter [@Hubbard:2016bg]. As compared to unsupervised apporaches such as PCA, this method is focused on generating an index variable that is predictive of the outcome of interest.
+
+To demonstrate the package usage, we've included some simulated data:
+```{r data}
+data(gasl_test_sim)
+str(gasl_test_sim$sim_data)
+```
+_todo: writeup DGD_
+
+To fit a GASL model, simply specify the covariate matrix and outcome vector, and a character vector of covariates to include in the factor. Any other covariates will be fit by a separate smoother. By default, both the factor and covariates will be fit using a linear model. By using `factor_args` or `covariate_args` to specify a list of arguments to `origami::orgami_SuperLearner`, including SuperLearner library and fold structure, either term can be fit using a SuperLearner. 
+
+```{r gasl_call}
+#construct gasl arguments
+X <- gasl_test_sim$sim_data[, c("A", "W1", "W2", "W3")]
+X$AW1 <- X$A * X$W1
+X <- as.matrix(X)
+Y <- gasl_test_sim$sim_data$Y
+
+factor_vars <- c("W2", "W3")
+covariate_args <- list(SL.library = c("SL.glm", "SL.mean"), folds = make_folds(Y))
+
+#fit gasl
+gasl_fit <- gasl(X, Y, factor_vars, covariate_args = covariate_args)
+
+#inspect results
+gasl_fit
+
+```
+
+Once the GASL model is fit, predictions can be generated on new datasets.
+
+```{r gasl_predict}
+test_data <- gasl_test_sim$test_data
+test_X <- test_data[, c("A", "W1", "W2", "W3")]
+test_X$AW1 <- test_X$A * test_X$W1
+```
+
+```{r gasl_predict2}
+test_data$gasl_pred <- predict(gasl_fit, newdata = test_X, type = "response")
+```
+
+```{r gasl_predict3}
+gasl:::logit_risk(test_data$Y, test_data$null_pred)
+gasl:::logit_risk(test_data$Y, test_data$gasl_pred)
+gasl:::logit_risk(test_data$Y, test_data$true_pred)
+gasl:::logit_risk(test_data$Y, test_data$Q0)
+```

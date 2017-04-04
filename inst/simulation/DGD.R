@@ -28,8 +28,7 @@ gen_data <- function(n = 1000, p = 3) {
     colnames(W) <- paste("W", seq_len(p), sep = "")
     g0W <- g0(W)
     A <- rbinom(n, 1, g0W)
-    A <- factor(A)
-    A_vals <- vals_from_factor(A)
+    A_vals <- sort(unique(A))
     u <- runif(n)
     Y <- as.numeric(u < Qbar0(A, W))
     
