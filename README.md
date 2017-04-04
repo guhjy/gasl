@@ -1,25 +1,15 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 gasl
-=======
+====
 
 gasl - GAM with Super Learner smoother
 
---------------------------
-
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "README-"
-)
-```
+------------------------------------------------------------------------
 
 Installation
-```{r, echo = TRUE, eval = FALSE}
+
+``` r
 library(devtools)
 devtools::install_github("jeremyrcoyle/origami")
 devtools::install_github("jeremyrcoyle/opttx")
