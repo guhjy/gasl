@@ -12,7 +12,7 @@ Installation
 ``` r
 library(devtools)
 devtools::install_github("jeremyrcoyle/origami")
-devtools::install_github("jeremyrcoyle/opttx")
+devtools::install_github("jeremyrcoyle/gasl")
 )
 ```
 
